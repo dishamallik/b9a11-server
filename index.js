@@ -71,7 +71,7 @@ async function run() {
     });
 
 
-// commit 
+
 
 
     app.get('/blogs/:id', async (req, res) => {
@@ -99,7 +99,7 @@ app.post('/wishlist', async (req, res) => {
   app.get('/wishlist/:id', async (req, res) => {
     const id = req.params.id;
     const query = { _id: new ObjectId(id) };
-    const result = await wishListCollection.findOne(query);
+    const result = await ishListCollection.findOne(query);
     res.send(result);
   });
 
