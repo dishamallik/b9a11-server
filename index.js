@@ -32,22 +32,30 @@ async function run() {
     const wishListCollection = client.db('foodBlog').collection('wishlist');
 
     
-app.get('/wishlist/', async (req, res) => {
-    let query = {};
-    if (req.query?.userEmail) {
-        query = { userEmail: req.query.userEmail };
-    }
-    const result = await wishListCollection.find(query).toArray();
-    res.send(result);
-});
-
-
-
-    app.post('/wishlist', async (req, res) => {
-      const wishlistItem = req.body;
-      const result = await wishListCollection.insertOne(wishlistItem);
-      res.send(result);
+    app.get('/wishlist', async (req, res) => {
+        try {
+            const userEmail = req.query.userEmail;
+            const result = await wishListCollection.find({ userEmail }).toArray();
+            res.json(result);
+        } catch (error) {
+            console.error('Error fetching wishlist data:', error);
+            res.status(500).json({ error: 'Internal server error' });
+        }
     });
+
+    // Route to add a new wishlist item
+    app.post('/wishlist', async (req, res) => {
+        try {
+            const wishlistItem = req.body;
+            const result = await wishListCollection.insertOne(wishlistItem);
+            res.status(201).json(result.ops[0]);
+        } catch (error) {
+            console.error('Error inserting wishlist item:', error);
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    });
+
+  
 
     // Other routes
     app.get('/blogs', async (req, res) => {
