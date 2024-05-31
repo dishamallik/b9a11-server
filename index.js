@@ -70,6 +70,10 @@ async function run() {
       res.send(result);
     });
 
+
+
+
+
     app.get('/blogs/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -83,17 +87,35 @@ async function run() {
       res.send(result);
     });
 
-    app.post('/comment', async (req, res) => {
-      const commentData = req.body;
-      const result = await commentCollection.insertOne(commentData);
-      res.send(result);
-    });
 
-    app.get('/comment', async (req, res) => {
-      const cursor = commentCollection.find();
-      const result = await cursor.toArray();
-      res.send(result);
-    });
+
+// 
+app.post('/wishlist', async (req, res) => {
+    const newWish = req.body;
+    const result = await wishListCollection.insertOne(newWish);
+    res.send(result);
+  });
+
+  app.get('/wishlist/:id', async (req, res) => {
+    const id = req.params.id;
+    const query = { _id: new ObjectId(id) };
+    const result = await wishListCollection.findOne(query);
+    res.send(result);
+  });
+
+// 
+
+    app.post('/comment', async (req, res) => {
+        const commentData = req.body;
+        const result = await commentCollection.insertOne(commentData);
+        res.send(result);
+      });
+  
+      app.get('/comment', async (req, res) => {
+        const cursor = commentCollection.find();
+        const result = await cursor.toArray();
+        res.send(result);
+      });                                                                                                                                                               
 
     app.put('/blogs/:id', async (req, res) => {
       const id = req.params.id;
