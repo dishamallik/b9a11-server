@@ -4,10 +4,20 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express();
 const port = process.env.PORT || 5000;
-
-// Middleware
-app.use(cors());
 app.use(express.json());
+
+app.use(
+    cors({
+      origin: [
+        "http://localhost:5173",
+        "https://food-blogging-ebb6d.web.app",
+        "https://food-blogging-ebb6d.firebaseapp.com"
+      ],
+      credentials: true,
+    })
+);
+
+
 
 console.log(process.env.DB_PASS);
 
@@ -25,7 +35,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server (optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     const blogCollection = client.db('foodBlog').collection('blogs');
     const commentCollection = client.db('foodBlog').collection('comment');
@@ -34,78 +44,60 @@ async function run() {
     
     app.get('/wishlist', async (req, res) => {
         try {
-            const userEmail = req.query.userEmail;
-            const result = await wishListCollection.find({ userEmail }).toArray();
-            res.json(result);
+          const userEmail = req.query.userEmail;
+          const result = await wishListCollection.find({ userEmail }).toArray();
+          res.json(result);
         } catch (error) {
-            console.error('Error fetching wishlist data:', error);
-            res.status(500).json({ error: 'Internal server error' });
+          console.error('Error fetching wishlist data:', error);
+          res.status(500).json({ error: 'Internal server error' });
         }
-    });
-
-    // Route to add a new wishlist item
-    app.post('/wishlist', async (req, res) => {
-        try {
-            const wishlistItem = req.body;
-            const result = await wishListCollection.insertOne(wishlistItem);
-            res.status(201).json(result.ops[0]);
-        } catch (error) {
-            console.error('Error inserting wishlist item:', error);
-            res.status(500).json({ error: 'Internal server error' });
-        }
-    });
-
+      });
   
-
-    // Other routes
-    app.get('/blogs', async (req, res) => {
-      const search = req.query.search;
-      let query = {};
-
-      if (search) {
-        query.title = { $regex: new RegExp(search, 'i') };
-      }
-
-      const result = await blogCollection.find(query).toArray();
-      res.send(result);
-    });
-
-
-
-
-
-    app.get('/blogs/:id', async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      const result = await blogCollection.findOne(query);
-      res.send(result);
-    });
-
-    app.post('/blogs', async (req, res) => {
-      const newFood = req.body;
-      const result = await blogCollection.insertOne(newFood);
-      res.send(result);
-    });
-
-// commit
-
-// 
-app.post('/wishlist', async (req, res) => {
-    const newWish = req.body;
-    const result = await wishListCollection.insertOne(newWish);
-    res.send(result);
-  });
-
-  app.get('/wishlist/:id', async (req, res) => {
-    const id = req.params.id;
-    const query = { _id: new ObjectId(id) };
-    const result = await wishListCollection.findOne(query);
-    res.send(result);
-  });
-
-// 
-
-    app.post('/comment', async (req, res) => {
+      // Route to add a new wishlist item
+      app.post('/wishlist', async (req, res) => {
+        try {
+          const wishlistItem = req.body;
+          const result = await wishListCollection.insertOne(wishlistItem);
+          res.status(201).json(result.ops[0]);
+        } catch (error) {
+          console.error('Error inserting wishlist item:', error);
+          res.status(500).json({ error: 'Internal server error' });
+        }
+      });
+  
+      app.get('/blogs', async (req, res) => {
+        const search = req.query.search;
+        let query = {};
+  
+        if (search) {
+          query.title = { $regex: new RegExp(search, 'i') };
+        }
+  
+        const result = await blogCollection.find(query).toArray();
+        res.send(result);
+      });
+  
+      app.get('/blogs/:id', async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await blogCollection.findOne(query);
+        res.send(result);
+      });
+  
+      app.post('/blogs', async (req, res) => {
+        const newFood = req.body;
+        const result = await blogCollection.insertOne(newFood);
+        res.send(result);
+      });
+  
+      app.get('/wishlist/:id', async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await wishListCollection.findOne(query);
+        res.send(result);
+      });
+  
+      app.post('/comment', async (req, res) => {
         const commentData = req.body;
         const result = await commentCollection.insertOne(commentData);
         res.send(result);
@@ -115,28 +107,28 @@ app.post('/wishlist', async (req, res) => {
         const cursor = commentCollection.find();
         const result = await cursor.toArray();
         res.send(result);
-      });                                                                                                                                                               
-
-    app.put('/blogs/:id', async (req, res) => {
-      const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
-      const options = { upsert: true };
-      const updatedBlog = req.body;
-      const blog = {
-        $set: {
-          title: updatedBlog.title,
-          image: updatedBlog.image,
-          shortDescription: updatedBlog.shortDescription,
-          longDescription: updatedBlog.longDescription,
-          category: updatedBlog.category,
-        }
-      };
-      const result = await blogCollection.updateOne(filter, blog, options);
-      res.send(result);
-    });
-
+      });
+  
+      app.put('/blogs/:id', async (req, res) => {
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const options = { upsert: true };
+        const updatedBlog = req.body;
+        const blog = {
+          $set: {
+            title: updatedBlog.title,
+            image: updatedBlog.image,
+            shortDescription: updatedBlog.shortDescription,
+            longDescription: updatedBlog.longDescription,
+            category: updatedBlog.category,
+          }
+        };
+        const result = await blogCollection.updateOne(filter, blog, options);
+        res.send(result);
+      });
+  
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
